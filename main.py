@@ -26,7 +26,6 @@ fontsys=pygame.font.SysFont(font, 50)
 c_gray = (40,40,40)
 c_white = (255,255,255)
 
-
 # Carregando arquivos de imagem
 background_menu = pygame.image.load("assets/mainmenu.jpg")
 background = pygame.image.load("assets/field.png")
@@ -37,7 +36,8 @@ score1_img = pygame.image.load("assets/score/0.png")
 score2_img = pygame.image.load("assets/score/0.png")
 win = pygame.image.load("assets/win-old.png")
 
-score1 = 9
+# Definição de variavel de controle
+score1 = 0
 score2 = 0
 player1_y = 290
 player1_y_up = False
@@ -54,7 +54,7 @@ menu_run = True
 kick_p1 = True
 kick_p2 = True
 
-def screen_draw():
+def screen_draw(): # Cria a interface
     if score1 < 10 and score2 < 10:
         screen.blit(background, (0, 0))
         screen.blit(player1, (50, player1_y))
@@ -62,8 +62,7 @@ def screen_draw():
         screen.blit(ball, (ball_x, ball_y))
         screen.blit(score1_img, (500, 20))
         screen.blit(score2_img, (710, 20))
-        move_ball()
-        move_player()
+        moveball()
         auto_play()
         speedball()
     else: 
@@ -77,14 +76,13 @@ def screen_draw():
         playagain = fontsys.render("Press SPACE to play again", 1, c_gray)
         screen.blit(playagain, (430,650))
 
-def auto_play():
+def auto_play(): # Jogo de demonstração
     global player2_y
     global player1_y
-
     #player2_y = ball_y
     #player1_y = ball_y
 
-def slowball():
+def slowball(): # Reduz a velocidade da bola
     global ball_direction
 
     if ball_direction < 0:
@@ -96,7 +94,7 @@ def slowball():
             ball_direction = ball_direction - 5
         else: ball_direction = 5
 
-def speedball():
+def speedball(): # Aumenta a velocidade da bola
     global ball_direction
 
     maxspeed_x = 30
@@ -107,8 +105,7 @@ def speedball():
         elif ball_direction > 0:
             ball_direction += 0.0075    
 
-
-def move_ball():
+def moveball(): # Move a bola + pontuação
     global ball_x
     global ball_y
     global ball_direction
@@ -119,43 +116,29 @@ def move_ball():
     global score2_img
     global kick_p1
     global kick_p2
-
     ball_x += ball_direction
     ball_y += ball_direction_Y
-
-    ajustebug = 0 
-
-    
-
     # Colisão player 1
     if ball_x < 120:
-        print(f'bx: {ball_x} | P:{player1_y} | B: {ball_y} | B23: {ball_y + 23}')
-        if player1_y < ball_y + 23 + ajustebug:
+        if player1_y < ball_y + 23:
             if player1_y + 146 > ball_y:
                 if kick_p1 == True:
                     ball_direction *= -1
                     kick_p2 = True
                     kick_p1 = False
-
     # Colisão player 2
     if ball_x > 1110:
-        print(f'bx: {ball_x} | P:{player1_y} | B: {ball_y} | B23: {ball_y + 23}')
-        if player2_y < ball_y + 23 + ajustebug: # 23
+        if player2_y < ball_y + 23: # 23
             if player2_y + 146 > ball_y: # 146
                 if kick_p2 == True:
                     ball_direction *= -1
                     kick_p2 = False
                     kick_p1 = True
-                
-                
-
-
     # Limite do campo
     if ball_y > 687:
         ball_direction_Y *= -1
     elif ball_y <= 0:
         ball_direction_Y *= -1
-
     # Reset posição bola + pontuação
     if ball_x < 81: #120px limite - metade da largura da imagem (39px)
         ball_x = 617
@@ -167,7 +150,6 @@ def move_ball():
         score2 += 1
         score2_img = pygame.image.load(f'assets/score/{score2}.png')
         slowball()
-        
     elif ball_x > 1149: #1110px limite + metade da largura da imagem (39px)
         ball_x = 617
         ball_y = 337
@@ -179,46 +161,30 @@ def move_ball():
         score1_img = pygame.image.load(f'assets/score/{score1}.png')
         slowball()
 
-
-
-
-
-def move_player():
-    global player1_y
-    global player2_y
-
-    if player1_y_up:
-        player1_y -= 10
+def moveplayer(arg): # Move os jogadores
+    if arg == 1:
+        player = player1_y
+        player_up = player1_y_up
+        player_down = player1_y_down
+    elif arg == 2: 
+        player = player2_y
+        player_up = player2_y_up
+        player_down = player2_y_down
+    if player_up:
+        player -= 10
     else:
-        player1_y += 0
-
-    if player1_y_down:
-        player1_y += 10
+        player += 0
+    if player_down:
+        player += 10
     else:
-        player1_y += 0
+        player += 0
+    if player <= 0:
+        player = 0
+    elif player >= 575:
+        player = 575
+    return player
 
-    if player1_y <= 0:
-        player1_y = 0
-    elif player1_y >= 575:
-        player1_y = 575
-
-    
-    if player2_y_up:
-        player2_y -= 10
-    else:
-        player2_y += 0
-
-    if player2_y_down:
-        player2_y += 10
-    else:
-        player2_y += 0
-
-    if player2_y <= 0:
-        player2_y = 0
-    elif player2_y >= 575:
-        player2_y = 575
-
-def restartgame(): 
+def restartgame(): # Reinicia o jogo com valores padrão
     global score1
     global score2
     global score1_img
@@ -234,11 +200,9 @@ def restartgame():
     kick_p1 = True
     kick_p2 = True
 
-def menu():
-
+def menu(): # Tela inicial
     global menu_run
     global game_run
-
     while menu_run:
         for events in pygame.event.get():
             if events.type == pygame.QUIT:
@@ -247,25 +211,23 @@ def menu():
                 if events.key == pygame.K_RETURN or events.key == pygame.K_KP_ENTER:
                     menu_run = False
                     game_run = True
-
-
         screen.blit(background_menu, (0,0))
         pressstart_txt = fontsys.render("< Press ENTER to play >", 1, c_white)
         screen.blit(pressstart_txt, (430,650))
-
         pygame.display.flip()
-        pygame.time.Clock().tick(60)
+        pygame.time.Clock().tick()
 
-def game(): # Fluxo principal do jogo,0
+def game(): # Tela do jogo. Fluxo do jogo
     global game_run
     global menu_run
+    global player1_y
+    global player2_y
     global player1_y_down
     global player1_y_up
     global player2_y_down
     global player2_y_up
-    
+    # Loop do jogo
     while game_run:
-
         for events in pygame.event.get():
             if events.type == pygame.QUIT:
                 game_run = False
@@ -280,8 +242,7 @@ def game(): # Fluxo principal do jogo,0
                     player2_y_down = True
                 if events.key == pygame.K_SPACE and (score1 >= 10 or score2 >=10):
                     restartgame()
-
-            if events.type == pygame.KEYUP: # Evento de precionar tecla
+            if events.type == pygame.KEYUP: # Evento de soltar tecla
                 if events.key == pygame.K_w:
                     player1_y_up = False
                 if events.key == pygame.K_s:
@@ -289,12 +250,13 @@ def game(): # Fluxo principal do jogo,0
                 if events.key == pygame.K_UP:
                     player2_y_up = False
                 if events.key == pygame.K_DOWN:
-                    player2_y_down = False
-        
-                
+                    player2_y_down = False        
         screen_draw()
-        # Renderiza a tela e controla o FPS
+        player1_y = moveplayer(1)
+        player2_y = moveplayer(2)
+        # Renderiza a tela
         pygame.display.flip()
+        # Controla o FPS
         pygame.time.Clock().tick(60)
 
 menu()
